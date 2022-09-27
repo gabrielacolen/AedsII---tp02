@@ -20,11 +20,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-/**
- * Lista estatica
- * @author Max do Val Machado
- * @version 2 01/2015
- */
+
 class Lista extends Game{
     private int[] array;
     private int n;
@@ -180,12 +176,12 @@ class Lista extends Game{
     /**
      * Mostra os elementos da lista separados por espacos.
      */
-    public void mostrar (){
-       System.out.print("[ ");
+    public String mostrar (){
+       String lista = "";
        for(int i = 0; i < n; i++){
-          System.out.print(array[i] + " ");
+          lista += Integer.toString(array[i])+" ";
        }
-       System.out.println("]  n = " + n);
+       return lista;
        
     }
  
@@ -203,6 +199,9 @@ class Lista extends Game{
        }
        return retorno;
     }
+    public int getTamanho(){
+        return n;
+    }
  }
 
 public class Game {
@@ -210,7 +209,7 @@ public class Game {
     static SimpleDateFormat default_dateFormat = new SimpleDateFormat("MMM/yyyy", Locale.ENGLISH);
 
     private String name, owners, website, developers;
-    private ArrayList<String> languages, genres;
+    private String languages="[", genres="[";
     private Date release_date;
     private int app_id, age, dlcs, avg_playtime;
     private float price, upvotes;
@@ -218,16 +217,16 @@ public class Game {
 
     public Game() {
         this.name = this.owners = this.website = this.developers = null;
-        this.languages = new ArrayList<String>();
-        this.genres = new ArrayList<String>();
+        this.languages = languages;
+        this.genres = genres;
         this.release_date = null;
         this.app_id = this.age = this.dlcs = this.avg_playtime = -1;
         this.price = this.upvotes = -1;
         this.windows = this.mac = this.linux = false;
     }
 
-    public Game(String name, String owners, String website, String developers, ArrayList<String> languages,
-            ArrayList<String> genres, Date release_date, int app_id, int age, int dlcs, int upvotes, int avg_playtime,
+    public Game(String name, String owners, String website, String developers, String languages,
+            String genres, Date release_date, int app_id, int age, int dlcs, int upvotes, int avg_playtime,
             float price, boolean windows, boolean mac, boolean linux) {
         this.name = name;
         this.owners = owners;
@@ -263,11 +262,11 @@ public class Game {
         this.developers = developers;
     }
 
-    public void setLanguages(ArrayList<String> languages) {
+    public void setLanguages(String languages) {
         this.languages = languages;
     }
 
-    public void setGenres(ArrayList<String> genres) {
+    public void setGenres(String genres) {
         this.genres = genres;
     }
 
@@ -327,11 +326,11 @@ public class Game {
         return this.developers;
     }
 
-    public ArrayList<String> getLanguages() {
+    public String getLanguages() {
         return this.languages;
     }
 
-    public ArrayList<String> getGenres() {
+    public String getGenres() {
         return this.genres;
     }
 
@@ -526,7 +525,8 @@ public class Game {
                 while (true) {
                     index++;
                     if (line.charAt(index) == '\'') {
-                        this.languages.add(line.substring(wordStart, index));
+                        if((line.charAt(index+1) == ']'))this.languages +=line.substring(wordStart, index)+"";
+                        else this.languages +=line.substring(wordStart, index)+", ";
                         break;
                     }
                 }
@@ -647,15 +647,16 @@ public class Game {
                 while (true) {
                     index++;
                     if (line.charAt(index) == ',') {
-                        this.genres.add(line.substring(atr_index, index));
+                        this.genres +=(line.substring(atr_index, index)+", ");
                         atr_index = ++index;
                     } else if (line.charAt(index) == '\"') {
-                        this.genres.add(line.substring(atr_index, line.length() - 1));
+                        this.genres +=(line.substring(atr_index, line.length() - 1)+"");
                         break;
                     }
                 }
-            } else
-                this.genres.add(line.substring(atr_index, line.length()));
+            } else{
+                this.genres+=line.substring(atr_index, line.length());
+            }
         }
     }
 
@@ -673,11 +674,11 @@ public class Game {
         }
 
         DecimalFormat df = new DecimalFormat("##");
-        System.out.println(this.app_id + " " + this.name + " " + default_dateFormat.format(this.release_date) + " "
-                + this.owners + " " + this.age + " " + String.format("%.2f", this.price) + " " + this.dlcs + " "
-                + this.languages + " " + this.website + " " + this.windows + " " + this.mac + " " + this.linux + " "
+        MyIO.println(this.app_id + " " + this.name + " " + default_dateFormat.format(this.release_date) + " "
+                + this.owners + " " + this.age + " " + String.format("%.2f", this.price) + " " + this.dlcs +" "
+                 + this.languages+']' + " " + this.website + " " + this.windows + " " + this.mac + " " + this.linux + " "
                 + (Float.isNaN(this.upvotes) ? "0.0% " : df.format(this.upvotes) + "% ") + avg_pt + this.developers
-                + " " + this.genres);
+                + " "+ this.genres+']');
     }
 
     public String lerLinhas(String path, String id) throws IOException {
@@ -715,8 +716,22 @@ public class Game {
         return stringSeparada;
         
     }
-    public void fazTudo(String comando, String id, Lista Lista) throws Exception{
+    public void imprimeRemovidos(int id,String path) throws IOException{
+        BufferedReader leitura = new BufferedReader(new FileReader(path));
+        String frase = leitura.readLine();
+        String teste[] = new String[100];
+        teste = frase.split(",");
+
+        while(!(id==Integer.parseInt(teste[0])) && !(isFim(frase))){ //teste[0] = id
+            frase = leitura.readLine();
+            teste = frase.split(",");
+        }
+        MyIO.println("(R) "+teste[1]);
+
+    }
+    public void fazTudo(String comando, String id, Lista Lista,String path) throws Exception{
         int idInt = Integer.parseInt(id);
+        
 
         switch(comando){
             case "II":
@@ -728,17 +743,17 @@ public class Game {
             break;
 
             case "RF":
-                MyIO.println(Lista.removerFim());
+                imprimeRemovidos(Lista.removerFim(), path);
             break;
 
             case "RI":
             
-               MyIO.println(Lista.removerInicio());
+               imprimeRemovidos(Lista.removerInicio(), path);
             break;
         }
     }
 
-    public void fazTudoException(String comando, String pos, String id, Lista Lista) throws Exception{
+    public void fazTudoException(String comando, String pos, String id, Lista Lista,String path) throws Exception{
         int idInt = Integer.parseInt(id);
         int posInt = Integer.parseInt(pos);
 
@@ -748,9 +763,22 @@ public class Game {
             break;
 
             case "R*":
-                Lista.remover(posInt);
+                imprimeRemovidos(Lista.remover(posInt), path);
             break;
         }
+    }
+    public String juntarAtributos(int listaSeparada,String path) throws IOException{
+        BufferedReader leitura = new BufferedReader(new FileReader(path));
+        String frase = leitura.readLine();
+        String teste[] = new String[500];
+        teste = frase.split(",");
+
+        while(!(listaSeparada==Integer.parseInt(teste[0])) && !(isFim(frase))){ //teste[0] = id
+            frase = leitura.readLine();
+            teste = frase.split(",");
+        }
+        return frase;
+
     }
 
 
@@ -758,41 +786,55 @@ public class Game {
         Game Game = new Game();
         Lista lista = new Lista(500);
         String [] stringSeparada = new String[500];
+        String [] listaSeparada = new String[500];
         String id = MyIO.readLine();
         String path = "/tmp/games.csv";
         String idString;
         String nome;
+        String listaCheia;
         int numeroLinhas;
         while(!Game.isFim(id)){ //lendo e criando a lista
             Game.ler(Game.lerLinhas(path, id)); //pegando a id do verde e convertendo para a linha do csv
-            lista.inserirInicio(Game.getAppId());
+            lista.inserirFim(Game.getAppId());
             id = MyIO.readLine();
         }
-
-        MyIO.print("inicio ");
         numeroLinhas = MyIO.readInt();
         for(int i = 0; i<numeroLinhas; i++){
             idString = MyIO.readLine();
             if(idString.length()>2 && idString.charAt(1)!='*'){
                 stringSeparada = Game.separaIdString(idString); //non static = colocar Game.funcao
-                Game.fazTudo(stringSeparada[0], stringSeparada[1], lista);
+                Game.fazTudo(stringSeparada[0], stringSeparada[1], lista,path);
             }
-            else if(idString.charAt(1)=='*' && idString.length()>5){
+            else if(idString.charAt(1)=='*' && idString.length()>=5){
                 stringSeparada = Game.separaIdString(idString); //non static = colocar Game.funcao
-                Game.fazTudoException(stringSeparada[0], stringSeparada[1], stringSeparada[2], lista); //funcao switch case
+                try{
+                    Game.fazTudoException(stringSeparada[0], stringSeparada[1], stringSeparada[2], lista,path);} //funcao switch case
+                    catch(java.lang.ArrayIndexOutOfBoundsException e){
+                        Game.fazTudoException(stringSeparada[0], stringSeparada[1], "0", lista,path);
+                    }
             }
-            else if(idString.charAt(1)=='*' && idString.length()==5){
-                stringSeparada = Game.separaIdString(idString); //non static = colocar Game.funcao
-                Game.fazTudoException(stringSeparada[0], stringSeparada[1], "0", lista);
-            }
+            
             else{
                 stringSeparada[0]=idString;
-                Game.fazTudo(stringSeparada[0], "0", lista);
+                Game.fazTudo(stringSeparada[0], "0", lista,path);
             }
             
         }
-        lista.mostrar();
 
+        listaCheia = lista.mostrar();
+        String fraseInteira;
+        listaSeparada = Game.separaIdString(listaCheia);
+        
+        for(int i = 0 ;i<listaSeparada.length;i++){
+            Game Game2 = new Game();
+            fraseInteira = Game.juntarAtributos(Integer.parseInt(listaSeparada[i]),path);
+            Game2.ler(fraseInteira);
+            MyIO.print("["+i+"] ");
+            Game2.imprimir();
+        }
+        
+
+        
 
     }
 }
