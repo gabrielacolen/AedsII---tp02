@@ -745,6 +745,9 @@ public class Game {
             case "RF":
                 imprimeRemovidos(Lista.removerFim(), path);
             break;
+            case "RF*":
+                imprimeRemovidos(Lista.removerFim(), path);
+            break;
 
             case "RI":
             
@@ -827,7 +830,7 @@ public class Game {
         
         for(int i = 0 ;i<listaSeparada.length;i++){
             Game Game2 = new Game();
-            fraseInteira = Game.juntarAtributos(Integer.parseInt(listaSeparada[i]),path);
+            fraseInteira = Game2.juntarAtributos(Integer.parseInt(listaSeparada[i]),path);
             Game2.ler(fraseInteira);
             MyIO.print("["+i+"] ");
             Game2.imprimir();
